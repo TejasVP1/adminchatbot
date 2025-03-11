@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package chatbot;
+
+service ChatbotService {
+  rpc GenerateSQL (UserQuery) returns (SQLResponse);
+  rpc FormatResults (QueryResults) returns (FormattedResponse);
+}
+
+message UserQuery {
+  string user_input = 1;
+}
+
+message SQLResponse {
+  string sql_query = 1;
+}
+
+message QueryResults {
+  string json_data = 1;
+}
+
+message FormattedResponse {
+  string formatted_text = 1;
+}
