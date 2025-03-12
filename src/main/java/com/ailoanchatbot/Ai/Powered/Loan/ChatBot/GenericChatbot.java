@@ -34,9 +34,19 @@ public class GenericChatbot {
     private final ChatbotServiceGrpc.ChatbotServiceBlockingStub chatbotStub = ChatbotServiceGrpc.newBlockingStub(channel);
     @GetMapping
     public Map<String, String> generichatbot(@RequestParam String userInput) {
+        Map<String, String> response = new HashMap<>();
+
+        if (userInput == null || userInput.isBlank()) {  // Java 11+ (use trim().isEmpty() for Java 8)
+            response.put("response", "You need to enter details");
+            return response;
+        }
+
         try {
+            System.out.println(userInput);
             System.out.println("Started processing user input...");
 
+
+//            In programming, an API stub is a mock implementation of an API that is used for testing and development purposes. It acts as a placeholder for the actual API, allowing developers to simulate the behavior of the API without needing access to the real implementation. This is particularly useful when the actual API is not yet available, or when testing needs to be done in isolation from external dependencies
             // Call gRPC service to generate SQL
             Chatbot.SQLResponse sqlResponse = chatbotStub.generateSQL(
                     Chatbot.UserQuery.newBuilder().setUserInput(userInput).build()
@@ -66,7 +76,7 @@ public class GenericChatbot {
             queryResultsMap.put(queryId, queryResults);
 
             // Check the number of rows returned
-            if (queryResults.size() > 1) {
+            if (queryResults.size() > 50) {
                 // Generate Excel asynchronously
                 CompletableFuture.runAsync(() -> {
                     System.out.println("Starting Excel generation...");
@@ -94,6 +104,7 @@ public class GenericChatbot {
                     Chatbot.QueryResults.newBuilder().setJsonData(jsonResults).build()
             );
             System.out.println("gRPC formatResults completed!");
+            excelService.generateExcel(queryResults, queryId);
 
             return Map.of(
                     "response", formattedResponse.getFormattedText(),
